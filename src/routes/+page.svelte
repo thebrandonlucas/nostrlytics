@@ -13,10 +13,7 @@
 	// let relayName = 'wss://nostr.milou.lol';
 	// let relayName = 'wss://relay.nvote.co';
 
-	let kinds = [0, 1, 2, 3, 4, 5, 6, 7];
-	let kindCounts: { kind: number; count: number }[] = [];
-
-	let notes: Event[] = [];
+	let kindCounts: { kind: Kind; count: number }[] = [];
 
 	onMount(async () => {
 		const relay = relayInit(relayName);
@@ -28,12 +25,12 @@
 		});
 		await relay.connect();
 
-		let sub = relay.sub([
-			{
-				kinds: [1],
-				authors: [pubkey]
-			}
-		]);
+		// let sub = relay.sub([
+		// 	{
+		// 		kinds: [1],
+		// 		authors: [pubkey]
+		// 	}
+		// ]);
 
 		// for when you want to continuously listen for new events
 		// sub.on('event', (event: Event) => {
@@ -49,21 +46,46 @@
 
 		console.log({ events });
 
+		formatBarData(events);
+
 		relay.close();
 	});
 
-	function formatBarData() {
-		// match the count of each kind to it's kind
-		kindCounts = kinds.map((kind) => {
-			let count = 0;
-			notes.forEach((n) => n.kind === kind && count++);
-			return { kind, count };
-		});
-
-		console.log({ notes });
+	// Object.values on an enum returns a list of [name: string | value: any], where the
+	// first half (0, (array.length / 2) - 1) are the <name>values and the
+	// second half ((array.length / 2), array.length - 1) are the <value> values
+	// This converts the Kind enum to an object of { kindName: kindValue }, i.e. { Metadata: 0, Text: 1, ... }
+	const kindNamesValues = Object.values(Kind) as Array<string | number>;
+	const kindMap: Record<string, number> = {};
+	for (let i = 0; i < kindNamesValues.length / 2; i++) {
+		const key = kindNamesValues[i];
+		const valueIdx = kindNamesValues.length / 2 + i;
+		// if we index correctly, first half is always string and second half always number
+		const value = kindNamesValues[valueIdx] as number;
+		kindMap[key] = value;
 	}
 
-	$: notes.length && formatBarData();
+	console.log({ kindMap });
+
+	function formatBarData(events: Event[]) {
+		// match the count of each kind to it's kind
+		let kindCounts: Record<string, number> = {};
+		Object.values(Kind).forEach((kind) => {
+			kindCounts[kind] = 0;
+		});
+		events.forEach((event) => kindCounts[event.kind]++);
+
+		console.log({ kindCounts });
+		// kindCounts = kinds.map((kind) => {
+		// 	let count = 0;
+		// 	events.forEach((event) => event.kind === kind && count++);
+		// 	return { kind, count };
+		// });
+
+		// console.log({ kindCounts });
+
+		// console.log({ notes });
+	}
 </script>
 
 <p>Pubkey</p>
@@ -71,9 +93,8 @@
 <p>Relay</p>
 <input bind:value={relayName} />
 
-{#if notes}
-	<!-- <p>{JSON.stringify(notes)}</p> -->
+<!-- {#if notes}
 	{#if kindCounts.length}
 		<KindBar data={kindCounts} />
 	{/if}
-{/if}
+{/if} -->
