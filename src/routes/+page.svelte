@@ -69,7 +69,12 @@
 </script>
 
 <div class="flex justify-between mx-8 m-4">
-	<a href="#" class="text-2xl font-extrabold text-purple-300">Nostrlytics</a>
+	<a
+		target="_blank"
+		rel="noreferrer"
+		href="https://github.com/thebrandonlucas/nostrlytics"
+		class="text-2xl font-extrabold text-purple-300">Nostrlytics</a
+	>
 </div>
 
 <p class="text-center">Gain insights about your nostr data</p>
@@ -132,7 +137,9 @@
 			{:else}
 				<div>
 					<details>
-						<summary>Show nostr events for: {selectedKind}</summary>
+						<summary
+							>Show nostr events for: {kindToTitle[selectedKind]} (kind {selectedKind})</summary
+						>
 						<pre class="text-left"><code>{JSON.stringify(selectedEvents, null, 4)}</code></pre>
 					</details>
 				</div>

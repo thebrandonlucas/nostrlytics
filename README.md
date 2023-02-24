@@ -17,6 +17,14 @@ Then go to `http://localhost:5173`
 - [x] Allow connect by hex pubkey, `npub`, or `nip-05`
 - [x] Get raw event data from UI
 
+### Roadmap
+
+- [ ] Add multiple relays
+- [ ] Automatically connect to all relays associated with pubkey/nip-05
+- [ ] Time series data for `kinds` plot
+- [ ] View other's events referencing you instead of just your events
+- [ ] Pie chart of your events/events referencing you
+
 ### Suggestions welcome!
 
 Open an issue if you find bugs or for things you think should be added!
