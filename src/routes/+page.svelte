@@ -4,6 +4,7 @@
 	import KindBar from '../charts/KindBar.svelte';
 	import { getKindCounts } from '../utils/nostr';
 	import { kindMap } from '../utils/constants';
+	import Input from '../components/Input.svelte';
 
 	// rt
 	let pubkey = '3f503eef50d5b9f73af8d44ed380e4a3090e2c63631bffa9cd919bea38356a64';
@@ -52,9 +53,9 @@
 </script>
 
 <p>Pubkey</p>
-<input bind:value={pubkey} />
+<Input bind:value={pubkey} />
 <p>Relay</p>
-<input bind:value={relayName} />
+<Input bind:value={relayName} />
 
 {#if counts.length}
 	<div class="flex justify-center margin-auto mx-20 h-[75vh]">

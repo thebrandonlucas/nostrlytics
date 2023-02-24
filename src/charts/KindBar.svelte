@@ -16,7 +16,7 @@
 
 	export let data: { kind: string; count: number }[] = [];
 
-	const margin = { top: 40, right: 20, left: 150, bottom: 50 };
+	const margin = { top: 40, right: 20, left: 210, bottom: 50 };
 	let svg: SVGElement;
 
 	const delayOffset = 100;
@@ -74,9 +74,11 @@
 
 		rects
 			.on('mouseover', function () {
+				select('#tooltip').classed('hidden', false);
 				select(this).transition().attr('opacity', 1);
 			})
 			.on('mouseout', function () {
+				select('#tooltip').classed('hidden', true);
 				select(this).transition().attr('opacity', 0.7);
 			});
 
@@ -92,3 +94,14 @@
 <svelte:window on:resize={handleResize} />
 
 <svg class="h-full flex-1" bind:this={svg} />
+
+<div
+	id="tooltip"
+	class="absolute w-50 top-4 left-4 aspect-square bg-white rounded-lg pointer-events-none"
+/>
+
+<style lang="postcss">
+	svg :global(.tick) {
+		@apply text-lg;
+	}
+</style>
