@@ -56,23 +56,34 @@
 		const x = scaleLinear()
 			.domain([0, max(data, (d) => d.count) || 0])
 			.range([0, innerWidth]);
-		svgg
+		const rects = svgg
 			.selectAll('rect')
 			.data(data)
 			.join('rect')
 			.attr('x', () => 0)
 			.attr('y', ({ kind }) => y(kind) || '')
-			.attr('height', () => y.bandwidth())
+			.attr('height', () => y.bandwidth());
+
+		rects
 			.transition()
 			.delay((_, i) => i * delayOffset)
 			.duration(duration)
 			.attr('width', (d) => x(d.count))
 			.attr('fill', ({ count }) => color(String(count)))
-			.attr('opacity', '0.8');
+			.attr('opacity', 0.7);
+
+		rects
+			.on('mouseover', function () {
+				select(this).transition().attr('opacity', 1);
+			})
+			.on('mouseout', function () {
+				select(this).transition().attr('opacity', 0.7);
+			});
 
 		// FIXME: Figure out proper TS
 		select('.x.axis')
 			.attr('transform', `translate(0, ${innerHeight})`)
+			.transition()
 			.call(axisBottom(x) as any);
 		select('.y.axis').call(axisLeft(y) as any);
 	}
@@ -80,6 +91,4 @@
 
 <svelte:window on:resize={handleResize} />
 
-<div class="flex justify-center margin-auto mx-20 h-[75vh]">
-	<svg class="h-full flex-1" bind:this={svg} />
-</div>
+<svg class="h-full flex-1" bind:this={svg} />

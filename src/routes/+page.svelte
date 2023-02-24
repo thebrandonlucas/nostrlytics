@@ -57,5 +57,7 @@
 <input bind:value={relayName} />
 
 {#if counts.length}
-	<KindBar data={counts} />
+	<div class="flex justify-center margin-auto mx-20 h-[75vh]">
+		<KindBar data={counts} />
+	</div>
 {/if}
