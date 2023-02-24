@@ -1,38 +1,22 @@
-# create-svelte
+# Nostrlytics
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte).
+## Visualize your Nostr data.
 
-## Creating a project
+### Running Locally
 
-If you're seeing this, you've probably already done this step. Congrats!
-
-```bash
-# create a new project in the current directory
-npm create svelte@latest
-
-# create a new project in my-app
-npm create svelte@latest my-app
+```
+yarn
+yarn run dev
 ```
 
-## Developing
+Then go to `http://localhost:5173`
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+### Completed so far
 
-```bash
-npm run dev
+- [x] Bar chart of events by `kind`
+- [x] Allow connect by hex pubkey, `npub`, or `nip-05`
+- [x] Get raw event data from UI
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
+### Suggestions welcome!
 
-## Building
-
-To create a production version of your app:
-
-```bash
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+Open an issue if you find bugs or for things you think should be added!
