@@ -1,51 +1,78 @@
 <script lang="ts">
-	import * as d3 from 'd3';
-	import { axisBottom, axisLeft, max, range, scaleBand, scaleLinear, select } from 'd3';
-	import type { Kind } from 'nostr-tools';
+	import {
+		axisBottom,
+		axisLeft,
+		max,
+		scaleBand,
+		scaleLinear,
+		scaleOrdinal,
+		schemeAccent,
+		schemeSet2,
+		schemeSet3,
+		select
+	} from 'd3';
 	import { onMount } from 'svelte';
 
-	export let data: { kind: Kind; count: number }[] = [];
+	export let data: { kind: string; count: number }[] = [];
 
-	$: console.log('data', data);
+	const margin = { top: 40, right: 20, left: 150, bottom: 50 };
 
-	const margin = { top: 40, right: 20, left: 20, bottom: 50 };
-
-	const width = 600,
-		height = 300,
+	const width = 800,
+		height = 400,
 		innerWidth = width - margin.right - margin.left,
 		innerHeight = height - margin.bottom - margin.top;
 
-	const x = scaleBand<number>()
-		.domain(range(data.length))
-		.rangeRound([0, innerWidth])
+	const y = scaleBand()
+		.domain(data.map(({ kind }) => kind))
+		.rangeRound([innerHeight, 0])
 		.paddingInner(0.05);
-	const y = scaleLinear()
+	const x = scaleLinear()
 		.domain([0, max(data, (d) => d.count) || 0])
-		.range([innerHeight, 0]);
+		.range([0, innerWidth]);
 
 	const xAxis = axisBottom(x);
 	const yAxis = axisLeft(y);
 
+	function handleResize() {}
+
+	const color = scaleOrdinal(schemeSet3);
 	let chart;
 	onMount(() => {
-		chart = select('svg').append('g').attr('transform', `translate(${margin.top},${margin.left})`);
+		chart = select('svg').append('g').attr('transform', `translate(${margin.left},${margin.top})`);
 
+		const delayOffset = 100;
+		const duration = 1000;
 		chart
 			.selectAll('rect')
 			.data(data)
 			.join('rect')
-			.attr('x', (_, i) => (x(i) || 0) + x.bandwidth() / 2)
-			.attr('y', (d) => innerHeight - y(d.count))
-			.attr('width', () => x.bandwidth())
-			.attr('height', (d) => y(d.count));
+			.attr('x', (d) => 0)
+			.attr('y', ({ kind }) => y(kind) || '')
+			.attr('height', () => y.bandwidth())
+			.transition()
+			.delay((_, i) => i * delayOffset)
+			.duration(duration)
+			.attr('width', (d) => x(d.count))
+			.attr('fill', ({ count }) => color(String(count)))
+			.attr('opacity', '0.8');
 
 		chart
 			.append('g')
 			.attr('class', 'x axis')
 			.attr('transform', `translate(0, ${innerHeight})`)
 			.call(xAxis);
-		chart.append('g').attr('class', 'y axis').attr('transform', `translate(0, 0)`).call(yAxis);
+		chart.append('g').attr('class', 'y axis').call(yAxis);
 	});
 </script>
 
-<svg {width} {height} />
+<svelte:window on:resize={handleResize} />
+
+<div>
+	<svg {width} {height} />
+</div>
+
+<style lang="postcss">
+	div {
+		@apply flex;
+	}
+</style>

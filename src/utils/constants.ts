@@ -1,0 +1,20 @@
+export const kindMap = {
+	0: 'Metadata',
+	1: 'Text',
+	2: 'RecommendRelay',
+	3: 'Contacts',
+	4: 'EncryptedDirectMessage',
+	5: 'EventDeletion',
+	7: 'Reaction',
+	40: 'ChannelCreation',
+	41: 'ChannelMetadata',
+	42: 'ChannelMessage',
+	43: 'ChannelHideMessage',
+	44: 'ChannelMuteUser',
+	1984: 'Report',
+	9734: 'ZapRequest',
+	9735: 'Zap',
+	10002: 'RelayList',
+	22242: 'ClientAuth',
+	30023: 'Article'
+};
