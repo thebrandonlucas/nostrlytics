@@ -1,10 +1,12 @@
 <script lang="ts">
 	interface $$Props {
-		pattern?: string;
 		value: string;
+		pattern?: string;
+		placeholder?: string;
+		wide?: boolean;
 	}
-	export let pattern = '';
 	export let value = '';
+	export let wide = false;
 </script>
 
-<input class="p-1 rounded-md text-gray-900 " bind:value {pattern} />
+<input class={`p-1 rounded-md text-gray-900 ${wide ? 'w-full' : ''}`} bind:value {...$$restProps} />

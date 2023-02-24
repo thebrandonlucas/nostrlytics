@@ -33,6 +33,8 @@
 		relay.close();
 		console.log({ events });
 		formatBarData(events);
+		const n = await nip05.queryProfile('ratiotile@getalby.com');
+		console.log({ n });
 	});
 
 	function formatBarData(events: Event[]) {
@@ -52,13 +54,41 @@
 	}
 </script>
 
-<p>Pubkey</p>
-<Input bind:value={pubkey} />
-<p>Relay</p>
-<Input bind:value={relayName} />
+<div class="flex justify-between mx-8 m-4">
+	<a href="#" class="text-2xl font-extrabold text-purple-300">Nostrlytics</a>
+</div>
 
-{#if counts.length}
-	<div class="flex justify-center margin-auto mx-20 h-[75vh]">
+<p class="text-center">Enter a pubkey and relay to visualize statistics on it!</p>
+
+<div
+	class="flex justify-center mt-10
+"
+>
+	<form class="flex gap-2 w-1/2">
+		<div class="grow">
+			<p>Hex pubkey, npub, or nip-05</p>
+			<Input bind:value={pubkey} wide placeholder="Enter pubkey, npub, or nip-05" />
+		</div>
+		<div class="grow">
+			<p>Relay Socket</p>
+			<Input
+				bind:value={relayName}
+				wide
+				placeholder="Enter relay websocket (i.e. rwwss://eden.nostr.land)"
+				pattern={'^wss?://(?:[a-zA-Z0-9-]+.)+[a-zA-Z]{2,}$'}
+			/>
+		</div>
+		<button
+			class="p-1 bg-purple-500 rounded-md hover:bg-purple-600 transition-all duration-300 self-end"
+			type="submit">Connect!</button
+		>
+	</form>
+</div>
+
+<div class="flex justify-center margin-auto mx-20 h-[75vh]">
+	{#if !counts.length}
+		<p class="m-auto text-blue-300">Loading...</p>
+	{:else}
 		<KindBar data={counts} />
-	</div>
-{/if}
+	{/if}
+</div>
