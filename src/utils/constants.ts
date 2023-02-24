@@ -1,4 +1,4 @@
-export const kindMap = {
+export const kindToTitle = {
 	0: 'Metadata',
 	1: 'Text',
 	2: 'RecommendRelay',
@@ -17,4 +17,25 @@ export const kindMap = {
 	10002: 'RelayList',
 	22242: 'ClientAuth',
 	30023: 'Article'
+};
+
+export const titleToKind = {
+	Metadata: 0,
+	Text: 1,
+	RecommendRelay: 2,
+	Contacts: 3,
+	EncryptedDirectMessage: 4,
+	EventDeletion: 5,
+	Reaction: 7,
+	ChannelCreation: 40,
+	ChannelMetadata: 41,
+	ChannelMessage: 42,
+	ChannelHideMessage: 43,
+	ChannelMuteUser: 44,
+	Report: 1984,
+	ZapRequest: 9734,
+	Zap: 9735,
+	RelayList: 10002,
+	ClientAuth: 22242,
+	Article: 30023
 };

@@ -13,10 +13,16 @@
 	} from 'd3';
 	import { onMount } from 'svelte';
 	import debounce from 'just-debounce';
+	import { Kind, type Event } from 'nostr-tools';
+	import { filterEvents } from '../utils/nostr';
+	import { kindToTitle, titleToKind } from '../utils/constants';
 
 	export let data: { kind: string; count: number }[] = [];
+	export let events: Event[];
+	export let selectedEvents: Event[];
+	export let selectedKind: Kind;
 
-	const margin = { top: 40, right: 20, left: 210, bottom: 50 };
+	const margin = { top: 40, right: 20, left: 240, bottom: 50 };
 	let svg: SVGElement;
 
 	const delayOffset = 100;
@@ -39,6 +45,10 @@
 		render(svgg, svg);
 	});
 
+	function getLabel(kind: number) {
+		return `${kind} (${kindToTitle[kind as keyof typeof kindToTitle]})`;
+	}
+
 	function render(
 		svgg: Selection<SVGGElement | BaseType, null, SVGElement, unknown>,
 		svg: SVGElement
@@ -50,7 +60,7 @@
 			innerHeight = height - margin.bottom - margin.top;
 
 		const y = scaleBand()
-			.domain(data.map(({ kind }) => kind))
+			.domain([0, 1, 2, 3, 4, 5, 7, 9734, 9735, 10002].map((d) => getLabel(d)))
 			.rangeRound([innerHeight, 0])
 			.paddingInner(0.05);
 		const x = scaleLinear()
@@ -60,26 +70,32 @@
 			.selectAll('rect')
 			.data(data)
 			.join('rect')
+			.attr('class', 'bar')
 			.attr('x', () => 0)
-			.attr('y', ({ kind }) => y(kind) || '')
+			.attr('y', ({ kind }) => y(getLabel(titleToKind[kind as keyof typeof titleToKind])) || '')
 			.attr('height', () => y.bandwidth());
-
 		rects
-			.transition()
+			.transition('extend')
 			.delay((_, i) => i * delayOffset)
 			.duration(duration)
 			.attr('width', (d) => x(d.count))
 			.attr('fill', ({ count }) => color(String(count)))
-			.attr('opacity', 0.7);
+			.attr('opacity', 0.9);
+
+		rects.append('title').text(({ kind, count }) => `${kind}: ${count}`);
 
 		rects
 			.on('mouseover', function () {
 				select('#tooltip').classed('hidden', false);
-				select(this).transition().attr('opacity', 1);
+				select(this).transition().duration(50).attr('opacity', 1);
 			})
 			.on('mouseout', function () {
 				select('#tooltip').classed('hidden', true);
-				select(this).transition().attr('opacity', 0.7);
+				select(this).transition().duration(50).attr('opacity', 0.9);
+			})
+			.on('click', function (_, { kind }) {
+				selectedKind = Kind[kind as keyof typeof Kind];
+				selectedEvents = filterEvents(Kind[kind as keyof typeof Kind], events);
 			});
 
 		// FIXME: Figure out proper TS
@@ -103,5 +119,8 @@
 <style lang="postcss">
 	svg :global(.tick) {
 		@apply text-lg;
+	}
+	svg :global(.bar) {
+		@apply cursor-pointer;
 	}
 </style>

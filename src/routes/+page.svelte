@@ -1,94 +1,142 @@
 <script lang="ts">
-	import { Kind, nip05, relayInit, type Event } from 'nostr-tools';
-	import { onMount } from 'svelte';
+	import { Kind, relayInit, type Event as NostrEvent } from 'nostr-tools';
 	import KindBar from '../charts/KindBar.svelte';
-	import { getKindCounts } from '../utils/nostr';
-	import { kindMap } from '../utils/constants';
+	import { getKindCounts, getPubkey } from '../utils/nostr';
+	import { kindToTitle } from '../utils/constants';
 	import Input from '../components/Input.svelte';
 
-	// rt
-	let pubkey = '3f503eef50d5b9f73af8d44ed380e4a3090e2c63631bffa9cd919bea38356a64';
-	// fj
-	// let pubkey = '3bf0c63fcb93463407af97a5e5ee64fa883d107ef9e558472c4eb9aaaefa459d';
-	// Choose default relays by popularity according to nostr.band/stats
-	// let relayName = 'wss://eden.nostr.land';
-	let relayName = 'wss://relay.snort.social';
-	// let relayName = 'wss://nostr.milou.lol';
-	// let relayName = 'wss://relay.nvote.co';
-	// let relayName = 'wss://brb.io';
+	// Can be hex user, npub (nip-19), or internet identifier (nip-05)
+	let userId = '';
+	let relayName = 'wss://relay.damus.io';
+	let loading = false;
+	let error: Error;
 
 	type KindCount = { kind: string; count: number };
 	let counts: KindCount[] = [];
+	let events: NostrEvent[] = [];
+	let selectedEvents: NostrEvent[] = [];
+	let selectedKind: Kind;
 
-	onMount(async () => {
-		const relay = relayInit(relayName);
-		relay.on('connect', () => {
-			console.log(`connected to ${relay.url}`);
-		});
-		relay.on('error', () => {
-			alert(`failed to connect to ${relay.url}`);
-		});
-		await relay.connect();
-		const events = await relay.list([{ kinds: [1, 3, 7], authors: [pubkey] }]);
-		relay.close();
-		console.log({ events });
-		formatBarData(events);
-		const n = await nip05.queryProfile('ratiotile@getalby.com');
-		console.log({ n });
-	});
+	async function submit() {
+		loading = true;
+		try {
+			counts = [];
+			const pubkey = await getPubkey(userId);
+			// TODO: If they use nip-05 and have relays added, we should automatically grab those relays and connect to them
+			// FIXME: Getting Relay results is very finicky with this method, why?
+			const relay = relayInit(relayName);
+			relay.on('connect', () => {
+				console.log(`connected to ${relay.url}`);
+			});
+			relay.on('error', () => {
+				alert(`failed to connect to ${relay.url}`);
+			});
+			await relay.connect();
+			events = await relay.list([
+				{ kinds: [0, 1, 2, 3, 4, 5, 7, 9734, 9735, 10002], authors: [pubkey] }
+				// TODO: optionally show more kinds
+				// { kinds: [...Object.keys(kindToTitle).map((k) => parseInt(k))], authors: [pubkey] }
+			]);
+			relay.close();
+			formatBarData(events);
+		} catch (e) {
+			console.error(String(e));
+			alert(String(e));
+			error = new Error(String(e));
+		}
+		loading = false;
+	}
 
-	function formatBarData(events: Event[]) {
+	function formatBarData(events: NostrEvent[]) {
 		// get the count of each kind
 		const countMap = getKindCounts(events);
 		// convert map to named array for d3
-		counts = Object.keys(kindMap).reduce<KindCount[]>((c, kind) => {
-			const k = parseInt(kind) as keyof typeof kindMap;
+		counts = Object.keys(kindToTitle).reduce<KindCount[]>((c, kind) => {
+			const k = parseInt(kind) as keyof typeof kindToTitle;
 			return [
 				...c,
 				{
-					kind: kindMap[k],
+					kind: kindToTitle[k],
 					count: countMap[k]
 				}
 			];
 		}, []);
 	}
+
+	$: disabled = !(userId && relayName);
+	$: noEventsOnRelay = counts.length && counts.reduce((sum, { count }) => sum + count, 0) == 0;
+	// TODO: on-click of the y axis, user goes to Explanation of kind that was clicked!
 </script>
 
 <div class="flex justify-between mx-8 m-4">
 	<a href="#" class="text-2xl font-extrabold text-purple-300">Nostrlytics</a>
 </div>
 
-<p class="text-center">Enter a pubkey and relay to visualize statistics on it!</p>
+<p class="text-center">Gain insights about your nostr data</p>
 
 <div
 	class="flex justify-center mt-10
 "
 >
-	<form class="flex gap-2 w-1/2">
+	<form on:submit|preventDefault={submit} class="flex gap-2 w-1/2">
 		<div class="grow">
-			<p>Hex pubkey, npub, or nip-05</p>
-			<Input bind:value={pubkey} wide placeholder="Enter pubkey, npub, or nip-05" />
+			<p>Hex user, npub, or nip-05</p>
+			<!-- Ensure input is either hex pub, npub, or nip05 -->
+			<Input
+				bind:value={userId}
+				wide
+				placeholder="Enter hex pub, npub, or nip-05"
+				pattern={'(?:[0-9a-fA-F]{64}|npub[0-9A-Za-z]{59}|^([a-zA-Z0-9_-]+@)?[a-zA-Z0-9_-]+(.[a-zA-Z0-9_-]+)*?.[a-zA-Z]{2,18}'}
+			/>
 		</div>
 		<div class="grow">
-			<p>Relay Socket</p>
+			<p>Relay websocket</p>
 			<Input
 				bind:value={relayName}
 				wide
-				placeholder="Enter relay websocket (i.e. rwwss://eden.nostr.land)"
+				placeholder="wss://eden.nostr.land"
 				pattern={'^wss?://(?:[a-zA-Z0-9-]+.)+[a-zA-Z]{2,}$'}
 			/>
 		</div>
 		<button
-			class="p-1 bg-purple-500 rounded-md hover:bg-purple-600 transition-all duration-300 self-end"
-			type="submit">Connect!</button
+			{disabled}
+			class={`${
+				disabled ? 'bg-gray-500 hover:bg-gray-500' : ''
+			} p-1 bg-purple-500 rounded-md hover:bg-purple-600 transition-all duration-300 self-end`}
+			>Connect!</button
 		>
 	</form>
 </div>
 
-<div class="flex justify-center margin-auto mx-20 h-[75vh]">
-	{#if !counts.length}
-		<p class="m-auto text-blue-300">Loading...</p>
+<div class="flex justify-center items-center my-auto mx-20 h-[75vh]">
+	{#if loading}
+		<p class="text-blue-300">Loading...</p>
+	{:else if error}
+		<div>
+			<p>Error! Try again</p>
+			<p>{JSON.stringify(error)}</p>
+		</div>
+	{:else if !counts.length}
+		<p>
+			Enter your nostr <strong>hex pub, npub, or nip-05</strong> and a <strong>relay</strong> you post
+			to!
+		</p>
+	{:else if noEventsOnRelay}
+		<p>Looks like you don't have any events on this relay (or my code is broken!)</p>
 	{:else}
-		<KindBar data={counts} />
+		<div class="flex flex-col w-full h-full text-center">
+			<KindBar data={counts} bind:selectedEvents bind:selectedKind {events} />
+
+			{#if !selectedEvents.length}
+				<p>Click on an element to view nostr events</p>
+			{:else}
+				<div>
+					<details>
+						<summary>Show nostr events for: {selectedKind}</summary>
+						<pre class="text-left"><code>{JSON.stringify(selectedEvents, null, 4)}</code></pre>
+					</details>
+				</div>
+			{/if}
+		</div>
 	{/if}
 </div>
