@@ -71,8 +71,8 @@
 	<svg {width} {height} />
 </div>
 
-<style lang="postcss">
+<!-- <style lang="postcss">
 	div {
 		@apply flex;
 	}
-</style>
+</style> -->
