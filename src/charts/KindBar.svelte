@@ -6,47 +6,61 @@
 		scaleBand,
 		scaleLinear,
 		scaleOrdinal,
-		schemeAccent,
-		schemeSet2,
 		schemeSet3,
-		select
+		select,
+		type BaseType,
+		type Selection
 	} from 'd3';
 	import { onMount } from 'svelte';
+	import debounce from 'just-debounce';
 
 	export let data: { kind: string; count: number }[] = [];
 
 	const margin = { top: 40, right: 20, left: 150, bottom: 50 };
+	let svg: SVGElement;
 
-	const width = 800,
-		height = 400,
-		innerWidth = width - margin.right - margin.left,
-		innerHeight = height - margin.bottom - margin.top;
+	const delayOffset = 100;
+	const duration = 1000;
 
-	const y = scaleBand()
-		.domain(data.map(({ kind }) => kind))
-		.rangeRound([innerHeight, 0])
-		.paddingInner(0.05);
-	const x = scaleLinear()
-		.domain([0, max(data, (d) => d.count) || 0])
-		.range([0, innerWidth]);
-
-	const xAxis = axisBottom(x);
-	const yAxis = axisLeft(y);
-
-	function handleResize() {}
+	const handleResize = debounce(() => render(svgg, svg), 100);
 
 	const color = scaleOrdinal(schemeSet3);
-	let chart;
-	onMount(() => {
-		chart = select('svg').append('g').attr('transform', `translate(${margin.left},${margin.top})`);
 
-		const delayOffset = 100;
-		const duration = 1000;
-		chart
+	let svgg: Selection<SVGGElement | BaseType, null, SVGElement, unknown>;
+	onMount(() => {
+		svgg = select(svg)
+			.selectAll('g')
+			.data([null])
+			.join('g')
+			.attr('transform', `translate(${margin.left},${margin.top})`);
+		// append axes but don't draw them yet
+		svgg.append('g').attr('class', 'x axis');
+		svgg.append('g').attr('class', 'y axis');
+		render(svgg, svg);
+	});
+
+	function render(
+		svgg: Selection<SVGGElement | BaseType, null, SVGElement, unknown>,
+		svg: SVGElement
+	) {
+		const rect = svg.getBoundingClientRect(),
+			width = rect.width,
+			height = rect.height,
+			innerWidth = width - margin.right - margin.left,
+			innerHeight = height - margin.bottom - margin.top;
+
+		const y = scaleBand()
+			.domain(data.map(({ kind }) => kind))
+			.rangeRound([innerHeight, 0])
+			.paddingInner(0.05);
+		const x = scaleLinear()
+			.domain([0, max(data, (d) => d.count) || 0])
+			.range([0, innerWidth]);
+		svgg
 			.selectAll('rect')
 			.data(data)
 			.join('rect')
-			.attr('x', (d) => 0)
+			.attr('x', () => 0)
 			.attr('y', ({ kind }) => y(kind) || '')
 			.attr('height', () => y.bandwidth())
 			.transition()
@@ -56,23 +70,16 @@
 			.attr('fill', ({ count }) => color(String(count)))
 			.attr('opacity', '0.8');
 
-		chart
-			.append('g')
-			.attr('class', 'x axis')
+		// FIXME: Figure out proper TS
+		select('.x.axis')
 			.attr('transform', `translate(0, ${innerHeight})`)
-			.call(xAxis);
-		chart.append('g').attr('class', 'y axis').call(yAxis);
-	});
+			.call(axisBottom(x) as any);
+		select('.y.axis').call(axisLeft(y) as any);
+	}
 </script>
 
 <svelte:window on:resize={handleResize} />
 
-<div>
-	<svg {width} {height} />
+<div class="flex justify-center margin-auto mx-20 h-[75vh]">
+	<svg class="h-full flex-1" bind:this={svg} />
 </div>
-
-<!-- <style lang="postcss">
-	div {
-		@apply flex;
-	}
-</style> -->
