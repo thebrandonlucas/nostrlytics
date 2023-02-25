@@ -77,7 +77,18 @@
 	>
 </div>
 
-<h1 class="text-center text-2xl font-extrabold">Gain insights about your nostr data</h1>
+<div class="text-center w-[450px] mx-auto">
+	<h1 class="text-2xl mb-3 font-extrabold">Gain insights about your nostr data</h1>
+	<p>
+		This is a work in progress, if you find a bug or have an idea for a feature you'd like to see
+		added, feel free to <a
+			class="font-bold text-blue-300 hover:underline"
+			target="_blank"
+			rel="noreferrer"
+			href="https://github.com/thebrandonlucas/nostrlytics">open an issue!</a
+		>
+	</p>
+</div>
 
 <div
 	class="flex justify-center mt-10
