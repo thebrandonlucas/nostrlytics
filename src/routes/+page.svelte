@@ -77,7 +77,7 @@
 	>
 </div>
 
-<p class="text-center">Gain insights about your nostr data</p>
+<h1 class="text-center text-2xl font-extrabold">Gain insights about your nostr data</h1>
 
 <div
 	class="flex justify-center mt-10
@@ -130,6 +130,7 @@
 		<p>Looks like you don't have any events on this relay (or my code is broken!)</p>
 	{:else}
 		<div class="flex flex-col w-full h-full text-center">
+			<h2 class="text-lg font-bold mt-5">View events by Kind</h2>
 			<KindBar data={counts} bind:selectedEvents bind:selectedKind {events} />
 
 			{#if !selectedEvents.length}
