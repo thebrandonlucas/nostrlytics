@@ -1,0 +1,16 @@
+{
+	"names": {
+		"_": "3f503eef50d5b9f73af8d44ed380e4a3090e2c63631bffa9cd919bea38356a64"
+	},
+	"relays": {
+		"3f503eef50d5b9f73af8d44ed380e4a3090e2c63631bffa9cd919bea38356a64": [
+			"wss://nostr.mutinywallet.com",
+			"wss://nos.lol",
+			"wss://relay.snort.social",
+			"wss://eden.nostr.land",
+			"wss://nostr.milou.lol",
+			"wss://nostr.wine",
+			"wss://puravida.nostr.land"
+		]
+	}
+}

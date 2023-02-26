@@ -1,6 +1,6 @@
 # Nostrlytics
 
-## Visualize your Nostr data.
+## Visualize your nostr data.
 
 ### Running Locally
 
@@ -21,6 +21,7 @@ Then go to `http://localhost:5173`
 
 - [ ] Add multiple relays
 - [ ] Automatically connect to all relays associated with pubkey/nip-05
+- [ ] [nip-07](https://github.com/nostr-protocol/nips/blob/master/07.md) for easy connection
 - [ ] Time series data for `kinds` plot
 - [ ] View other's events referencing you instead of just your events
 - [ ] Pie chart of your events/events referencing you
