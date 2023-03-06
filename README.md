@@ -5,6 +5,8 @@
 ### Running Locally
 
 ```
+git clone https://github.com/thebrandonlucas/nostrlytics.git
+cd nostrlytics
 yarn
 yarn run dev
 ```
@@ -21,10 +23,14 @@ Then go to `http://localhost:5173`
 
 - [ ] Add multiple relays
 - [ ] Automatically connect to all relays associated with pubkey/nip-05
+- [ ] Filter chart data by relay
+- [ ] Reactions to your posts
 - [ ] [nip-07](https://github.com/nostr-protocol/nips/blob/master/07.md) for easy connection
+- [ ] Save pubkey & relays to localStorage for autoload on subsequent visits
 - [ ] Time series data for `kinds` plot
-- [ ] View other's events referencing you instead of just your events
+- [ ] Events mentioning you
 - [ ] Pie chart of your events/events referencing you
+- [ ] Social graph visualization
 
 ### Suggestions welcome!
 
