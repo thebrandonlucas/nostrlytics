@@ -45,6 +45,8 @@
 		render(svgg, svg);
 	});
 
+	$: data && render(svgg, svg);
+
 	function getLabel(kind: number) {
 		return `${kind} (${kindToTitle[kind as keyof typeof kindToTitle]})`;
 	}
@@ -53,9 +55,10 @@
 		svgg: Selection<SVGGElement | BaseType, null, SVGElement, unknown>,
 		svg: SVGElement
 	) {
+		const minHeight = 400;
 		const rect = svg.getBoundingClientRect(),
 			width = rect.width,
-			height = rect.height,
+			height = rect.height < minHeight ? minHeight : rect.height,
 			innerWidth = width - margin.right - margin.left,
 			innerHeight = height - margin.bottom - margin.top;
 
@@ -79,7 +82,7 @@
 			.delay((_, i) => i * delayOffset)
 			.duration(duration)
 			.attr('width', (d) => x(d.count))
-			.attr('fill', ({ count }) => color(String(count)))
+			.attr('fill', ({ kind }) => color(String(kind)))
 			.attr('opacity', 0.9);
 
 		rects.append('title').text(({ kind, count }) => `${kind}: ${count}`);
@@ -109,7 +112,9 @@
 
 <svelte:window on:resize={handleResize} />
 
-<svg class="h-full flex-1" bind:this={svg} />
+<div class="h-full">
+	<svg class="h-full w-full" bind:this={svg} />
+</div>
 
 <div
 	id="tooltip"
