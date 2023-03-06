@@ -1,5 +1,12 @@
 <script lang="ts">
-	import { Kind, relayInit, type Event as NostrEvent } from 'nostr-tools';
+	import {
+		Kind,
+		nip19,
+		relayInit,
+		SimplePool,
+		type Event as NostrEvent,
+		type Relay
+	} from 'nostr-tools';
 	import KindBar from '../charts/KindBar.svelte';
 	import { getKindCounts, getPubkey } from '../utils/nostr';
 	import { kindToTitle } from '../utils/constants';
@@ -9,35 +16,74 @@
 	let userId = '';
 	let relayName = 'wss://relay.damus.io';
 	let loading = false;
-	let error: Error;
+	let error: Error | null;
 
 	type KindCount = { kind: string; count: number };
 	let counts: KindCount[] = [];
 	let events: NostrEvent[] = [];
 	let selectedEvents: NostrEvent[] = [];
 	let selectedKind: Kind;
+	let relays: string[] = [];
 
 	async function submit() {
 		loading = true;
+		error = null;
 		try {
 			counts = [];
-			const pubkey = await getPubkey(userId);
-			// TODO: If they use nip-05 and have relays added, we should automatically grab those relays and connect to them
-			// FIXME: Getting Relay results is very finicky with this method, why?
-			const relay = relayInit(relayName);
-			relay.on('connect', () => {
-				console.log(`connected to ${relay.url}`);
-			});
-			relay.on('error', () => {
-				alert(`failed to connect to ${relay.url}`);
-			});
-			await relay.connect();
-			events = await relay.list([
-				{ kinds: [0, 1, 2, 3, 4, 5, 7, 9734, 9735, 10002], authors: [pubkey] }
-				// TODO: optionally show more kinds
-				// { kinds: [...Object.keys(kindToTitle).map((k) => parseInt(k))], authors: [pubkey] }
-			]);
-			relay.close();
+			let pubkey = '';
+			// let relays: string[] = [];
+			const result = await getPubkey(userId);
+			// If this doesn't return string, then user entered nip05 and we can get their relays here
+			if (typeof result !== 'string') {
+				pubkey = result.pubkey;
+				if (result.relays) {
+					// Ideal behavior: Ensure at least one relay is connectable, show first relay's data when connected,
+					// attempt to connect to the rest and update data as more are connected
+					// console.log(result.relays);
+					// const rel = await Promise.any(
+					// 	result.relays.map(async (url) => {
+					// 		return pool.ensureRelay(url);
+					// 	})
+					// );
+					// // Filter out the relay that successfully connected
+					// relays = [...result.relays.filter((url) => url !== rel.url), rel];
+					relays = result.relays;
+				}
+			} else {
+				pubkey = result;
+			}
+
+			// auto connect to relays, if none found, only connect to the one specified
+			console.log('seconds', { relays });
+			if (relays.length) {
+				const pool = new SimplePool();
+				// const urls = relays.map(({ url }) => url);
+				events = await pool.list(relays, [
+					{
+						kinds: [0, 1, 2, 3, 4, 5, 7, 9734, 9735, 10002],
+						authors: [pubkey]
+					}
+				]);
+				console.log({ pool, relays, events });
+				pool.close(relays);
+			} else {
+				// TODO: If they use nip-05 and have relays added, we should automatically grab those relays and connect to them
+				const relay = relayInit(relayName);
+				relay.on('connect', () => {
+					console.log(`connected to ${relay.url}`);
+				});
+				relay.on('error', () => {
+					alert(`failed to connect to ${relay.url}`);
+				});
+				await relay.connect();
+				events = await relay.list([
+					{ kinds: [0, 1, 2, 3, 4, 5, 7, 9734, 9735, 10002], authors: [pubkey] }
+					// TODO: optionally show more kinds
+					// { kinds: [...Object.keys(kindToTitle).map((k) => parseInt(k))], authors: [pubkey] }
+				]);
+				relay.close();
+				relays = [relay.url];
+			}
 			formatBarData(events);
 		} catch (e) {
 			console.error(String(e));
@@ -90,6 +136,12 @@
 	</p>
 </div>
 
+<ul>
+	{#each relays as relay}
+		<p>Name: {relay}</p>
+	{/each}
+</ul>
+
 <div
 	class="flex justify-center mt-10
 "
@@ -110,7 +162,7 @@
 			<Input
 				bind:value={relayName}
 				wide
-				placeholder="wss://eden.nostr.land"
+				placeholder="wss://relay.damus.io"
 				pattern={'^wss?://(?:[a-zA-Z0-9-]+.)+[a-zA-Z]{2,}$'}
 			/>
 		</div>
@@ -150,9 +202,12 @@
 				<div>
 					<details>
 						<summary
-							>Show nostr events for: {kindToTitle[selectedKind]} (kind {selectedKind})</summary
+							>Show <strong>{selectedEvents.length}</strong> events of type:
+							<strong>{kindToTitle[selectedKind]} (kind {selectedKind})</strong></summary
 						>
-						<pre class="text-left"><code>{JSON.stringify(selectedEvents, null, 4)}</code></pre>
+						<pre class="text-left whitespace-pre-wrap"><code
+								>{JSON.stringify(selectedEvents, null, 4)}</code
+							></pre>
 					</details>
 				</div>
 			{/if}

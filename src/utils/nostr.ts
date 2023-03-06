@@ -32,7 +32,7 @@ export async function getPubkey(userId: string) {
 				`Failed to retrieve nip-05 identifier: "${userId}". Are you sure you spelled it correctly?`
 			);
 		}
-		return result.pubkey;
+		return result;
 	}
 	throw new Error(`Oops! "${userId}" doesn't match hex pubkey, npub, or nip-05`);
 }
