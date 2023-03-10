@@ -1,4 +1,4 @@
-import { kindToTitle } from './constants';
+import { kindToTitle, rxHex, rxNip05, rxNpub } from './constants';
 import { Kind, nip05, nip19, type Event } from 'nostr-tools';
 
 type CountMap = Record<keyof typeof kindToTitle, number>;
@@ -17,10 +17,6 @@ export function getKindCounts(events: Event[]) {
 
 // Check that user entered valid pubkey, npub, or nip-05
 export async function getPubkey(userId: string) {
-	const rxHex = /^[0-9a-fA-F]{64}$/;
-	const rxNpub = /^npub[0-9A-Za-z]{59}$/;
-	// Match emails, subdomains, or just the domain if the user is default (i.e. "_" user)
-	const rxNip05 = /^([a-zA-Z0-9_-]+@)?[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)*?\.[a-zA-Z]{2,18}$/;
 	if (rxHex.test(userId)) {
 		return userId;
 	} else if (rxNpub.test(userId)) {
