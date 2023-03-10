@@ -39,3 +39,16 @@ export const titleToKind = {
 	ClientAuth: 22242,
 	Article: 30023
 };
+
+// Regex for pubkey hex, npub, and nip-05
+export const rxHex = /^[0-9a-fA-F]{64}$/;
+export const rxNpub = /^npub[0-9A-Za-z]{59}$/;
+// Match emails, subdomains, or just the domain if the user is default (i.e. "_" user).
+// Examples:
+// example.com - (default user)
+// exampleuser@example.com
+// exampleuser@example.sample.com
+// Emojis and emoji-like characters accepted by "Extended_Pictographic"
+// Explanation: https://stackoverflow.com/a/72727900/20095400
+export const rxNip05 =
+	/^([-_a-zA-Z0-9\p{Extended_Pictographic}]+@)?[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)*?\.[a-zA-Z]{2,18}$/u;
